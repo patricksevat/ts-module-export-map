@@ -1,20 +1,19 @@
 import * as ts from 'typescript';
-import * as util from 'util';
 import {
   createProgramForEntryFile,
   findSourceFile,
   getAbsoluteModulePathFromExportDeclaration,
   getExportsFromReExports,
-} from './src/utils';
-import { visitor } from './src/visitor';
-import { IAvailableExports, IContext, ISourceFileWithExports } from './src/types';
+} from './utils';
+import { visitor } from './visitor';
+import { IAvailableExports, IContext, ISourceFileWithExports } from './types';
 
 function getAvailableExports(entryFilePath: string) {
   const program = createProgramForEntryFile(entryFilePath);
   const entrySourceFile = program.getSourceFile(entryFilePath);
   const results = processSourceFile(entrySourceFile, program);
 
-  console.log(util.inspect(results, false, 3, true))
+  console.log(JSON.stringify(results, null, 2))
 }
 
 /**
@@ -85,4 +84,4 @@ function getSourceFilesForReExportedModules(
   return sourceFiles;
 }
 
-getAvailableExports('/Users/patricksevat/WebstormProjects/ts-ast-playground/src/test/senses.ts')
+getAvailableExports('/Users/patricksevat/WebstormProjects/ts-ast-playground/src/test/entry.ts')

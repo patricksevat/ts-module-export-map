@@ -1,11 +1,12 @@
 {
+  "name": "ts-module-export-map",
   "dependencies": {
     "repeat-string": "^1.6.1",
     "ts-node": "^8.10.2",
     "typescript": "3.5.3"
   },
   "scripts": {
-    "start": "node --inspect -r ts-node/register ./main.ts"
+    "start": "node --inspect -r ts-node/register ./src/main.ts"
   },
   "devDependencies": {
     "@types/node": "^15.12.1"

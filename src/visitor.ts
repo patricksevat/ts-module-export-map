@@ -82,15 +82,15 @@ function updateAvailableExports(context: IContext, symbolName: string) {
 
   if(shouldAdd) {
     if(context.availableExports[symbolName]) {
-      context.availableExports[symbolName][0].originalLocation = context.sourceFilePath;
-      if(!context.availableExports[symbolName][0].reExportPath.includes(context.sourceFilePath)) {
-        context.availableExports[symbolName][0].reExportPath.push(context.sourceFilePath)
+      context.availableExports[symbolName].originalLocation = context.sourceFilePath;
+      if(!context.availableExports[symbolName].reExportPath.includes(context.sourceFilePath)) {
+        context.availableExports[symbolName].reExportPath.push(context.sourceFilePath)
       }
     } else {
-      context.availableExports[symbolName] = [{
+      context.availableExports[symbolName] = {
         originalLocation: context.sourceFilePath,
         reExportPath: [context.sourceFilePath]
-      }]
+      }
     }
   }
 }

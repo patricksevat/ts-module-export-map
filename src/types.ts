@@ -22,5 +22,5 @@ export interface IAvailableExport {
 }
 
 export interface IAvailableExports {
-  [exportedSymbol: string]: IAvailableExport[]
+  [exportedSymbol: string]: IAvailableExport
 }
