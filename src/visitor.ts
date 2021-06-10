@@ -1,5 +1,5 @@
 import * as ts from 'typescript';
-import { getAbsoluteModulePathFromExportDeclaration, replaceQuotes } from './utils';
+import { getAbsoluteModulePathFromExportDeclaration } from './utils';
 import { IContext } from './types';
 
 export function visitor(

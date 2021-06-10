@@ -1,6 +1,7 @@
 import * as ts from 'typescript';
 import { IContext, ISourceFileWithExports } from './types';
-import fs from "fs";
+import * as fs from "fs";
+import * as path from 'path';
 
 export function replaceQuotes(str: string) {
   return str.replace(/["']/g, '')
@@ -14,7 +15,11 @@ export function findSourceFile(filePath: string, program: ts.Program): ts.Source
 }
 
 export function getCompilerOptions(tsConfigJsonPath: string) {
-  const configTxt = fs.readFileSync(tsConfigJsonPath, 'utf8');
+  if(!tsConfigJsonPath) {
+    return {}
+  }
+
+  const configTxt = fs.readFileSync(path.resolve(process.cwd(), tsConfigJsonPath), 'utf8');
   const { config } = ts.parseConfigFileTextToJson(tsConfigJsonPath, configTxt);
   return (config && config.compilerOptions) ? config.compilerOptions : {};
 }

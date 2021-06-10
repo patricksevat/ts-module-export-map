@@ -1,13 +1,9 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "baseUrl": ".",
     "declaration": false,
-    "downlevelIteration": true,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
     "lib": [
       "dom",
       "es2017",
@@ -15,34 +11,24 @@
       "esnext.array"
     ],
     "moduleResolution": "node",
+    "outDir": "./dist",
     "paths": {
       "@barrel-alias": ["./src/test/barrel/index.ts"]
     },
-    "sourceMap": true,
-    "target": "es2015",
+    "sourceMap": false,
+    "target": "es5",
     "typeRoots": [
       "node_modules/@types"
     ],
     "module": "esnext",
     "skipLibCheck": true
   },
-  "angularCompilerOptions": {
-    "annotateForClosureCompiler": true,
-    "enableResourceInlining": false,
-    "fullTemplateTypeCheck": true,
-    "skipTemplateCodegen": true,
-    "strictInjectionParameters": true,
-    "disableTypeScriptVersionCheck": true
-  },
+  "include": [
+    "src/**/*"
+  ],
   "exclude": [
-    "**/coverage",
     "**/dist",
-    "**/docs",
-    "**/node_modules",
-    "**/tmp",
-    "tools/schematics/**/*.js",
-    "tools/schematics/**/__*/**/*",
-    "tools/schematics/**/files/**/*"
+    "**/node_modules"
   ],
   "ts-node": {
     "compilerOptions": {

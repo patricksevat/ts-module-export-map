@@ -1,4 +1,7 @@
+#!/usr/bin/env ts-node
+
 import * as ts from 'typescript';
+import * as yargs from 'yargs';
 import {
   createProgramForEntryFile,
   findSourceFile,
@@ -8,8 +11,11 @@ import {
 import { visitor } from './visitor';
 import { IAvailableExports, IContext, ISourceFileWithExports } from './types';
 
-function getAvailableExports(entryFilePath: string) {
-  const tsConfigJsonPath = '/Users/patricksevat/WebstormProjects/ts-ast-playground/tsconfig.json';
+let argv;
+
+function getAvailableExports() {
+  const entryFilePath = argv._[0];
+  const tsConfigJsonPath = argv.tsConfigJson;
   const compilerOptions = getCompilerOptions(tsConfigJsonPath);
   const compilerHost = ts.createCompilerHost(compilerOptions);
   const program = createProgramForEntryFile(entryFilePath, compilerOptions, compilerHost);
@@ -89,4 +95,16 @@ function getSourceFilesForReExportedModules(
   return sourceFiles;
 }
 
-getAvailableExports('/Users/patricksevat/WebstormProjects/ts-ast-playground/src/test/entry.ts')
+async function parseCmdLineArgs() {
+  argv = await yargs(process.argv.slice(2)).options({
+    tsConfigJson: { type: 'string', default: '' }
+  }).argv
+}
+
+parseCmdLineArgs()
+  .then(getAvailableExports)
+  .then(() => process.exit(0))
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })

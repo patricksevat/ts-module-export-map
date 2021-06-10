@@ -3,7 +3,6 @@ export { fromInnerBarrel, iAmReExported } from "@barrel-alias";
 // @ts-ignore
 export * from './nothing-exported';
 export * from './barrel2';
-export * from 'repeat-string';
 
 export interface BfAdviseAuthTokenState {
   authToken: string;
