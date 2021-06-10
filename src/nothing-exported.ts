@@ -1,1 +1,1 @@
-export const notReExported = 'foo'
+const notExported = 'foo'

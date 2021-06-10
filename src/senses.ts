@@ -1,7 +1,7 @@
 // @ts-ignore
 export { fromInnerBarrel, iAmReExported } from "./barrel";
 // @ts-ignore
-// import * as notReExported from './nothing-exported';
+export * from './nothing-exported';
 export * from './barrel2';
 export * from 'repeat-string';
 
