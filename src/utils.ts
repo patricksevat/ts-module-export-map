@@ -1,5 +1,6 @@
 import * as ts from 'typescript';
 import { IContext, ISourceFileWithExports } from './types';
+import fs from "fs";
 
 export function replaceQuotes(str: string) {
   return str.replace(/["']/g, '')
@@ -12,16 +13,24 @@ export function findSourceFile(filePath: string, program: ts.Program): ts.Source
     null
 }
 
-export function createProgramForEntryFile(entryFilePath: string) {
-  const compilerOpts = { moduleResolution: ts.ModuleResolutionKind.NodeJs };
+export function getCompilerOptions(tsConfigJsonPath: string) {
+  const configTxt = fs.readFileSync(tsConfigJsonPath, 'utf8');
+  const { config } = ts.parseConfigFileTextToJson(tsConfigJsonPath, configTxt);
+  return (config && config.compilerOptions) ? config.compilerOptions : {};
+}
+
+export function createProgramForEntryFile(entryFilePath: string, compilerOptions: ts.CompilerOptions, host: ts.CompilerHost) {
+  const compilerOpts = {
+    ...compilerOptions,
+    moduleResolution: ts.ModuleResolutionKind.NodeJs
+  };
   const rootFiles = [entryFilePath];
-  return ts.createProgram(rootFiles, compilerOpts);
+  return ts.createProgram(rootFiles, compilerOpts, host);
 }
 
 export function getAbsoluteModulePathFromExportDeclaration(context: IContext, node: ts.ExportDeclaration) {
   const moduleName = replaceQuotes(node.moduleSpecifier.getText(context.sourceFile));
-  // @ts-ignore
-  const resolvedModule = context.program.getResolvedModuleWithFailedLookupLocationsFromCache(moduleName, context.sourceFile.fileName)
+  const resolvedModule = ts.resolveModuleName(moduleName, context.sourceFile.fileName, context.program.getCompilerOptions(), context.compilerHost)
   if(resolvedModule && resolvedModule.resolvedModule) {
     return resolvedModule.resolvedModule.resolvedFileName;
   }

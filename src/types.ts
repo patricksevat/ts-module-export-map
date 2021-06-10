@@ -1,6 +1,7 @@
 import * as ts from 'typescript';
 
 export interface IContext {
+  compilerHost: ts.CompilerHost,
   program: ts.Program,
   sourceFile: ts.SourceFile,
   sourceFilePath: string,

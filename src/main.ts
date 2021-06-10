@@ -2,16 +2,19 @@ import * as ts from 'typescript';
 import {
   createProgramForEntryFile,
   findSourceFile,
-  getAbsoluteModulePathFromExportDeclaration,
+  getAbsoluteModulePathFromExportDeclaration, getCompilerOptions,
   getExportsFromReExports,
 } from './utils';
 import { visitor } from './visitor';
 import { IAvailableExports, IContext, ISourceFileWithExports } from './types';
 
 function getAvailableExports(entryFilePath: string) {
-  const program = createProgramForEntryFile(entryFilePath);
+  const tsConfigJsonPath = '/Users/patricksevat/WebstormProjects/ts-ast-playground/tsconfig.json';
+  const compilerOptions = getCompilerOptions(tsConfigJsonPath);
+  const compilerHost = ts.createCompilerHost(compilerOptions);
+  const program = createProgramForEntryFile(entryFilePath, compilerOptions, compilerHost);
   const entrySourceFile = program.getSourceFile(entryFilePath);
-  const results = processSourceFile(entrySourceFile, program);
+  const results = processSourceFile(entrySourceFile, program, compilerHost);
 
   console.log(JSON.stringify(results, null, 2))
 }
@@ -19,15 +22,17 @@ function getAvailableExports(entryFilePath: string) {
 /**
  * @param sourceFile
  * @param program
+ * @param compilerHost
  * @param availableExports
  * `availableExports` is the aggregate object which collects all exports, the file they are originally declared in,
  * and the re-export path which shows all the files which have exported this symbol
  * @param elements
  * `elements` are named reexports such as: export { foo, bar } from './other-module'
  */
-function processSourceFile(sourceFile: ts.SourceFile, program: ts.Program, availableExports: IAvailableExports = {}, elements: ts.ExportSpecifier[] = null) {
+function processSourceFile(sourceFile: ts.SourceFile, program: ts.Program, compilerHost: ts.CompilerHost, availableExports: IAvailableExports = {}, elements: ts.ExportSpecifier[] = null) {
   const context = {
     program,
+    compilerHost,
     sourceFile,
     sourceFilePath: sourceFile.fileName.replace(process.cwd(), ''),
     typeChecker: program.getTypeChecker(),
@@ -44,7 +49,7 @@ function processSourceFile(sourceFile: ts.SourceFile, program: ts.Program, avail
 
   reExportedSourceFiles.forEach((childSourceFileWithElements) => {
     const { sourceFile: childSourceFile, elements: childElements } = childSourceFileWithElements;
-    processSourceFile(childSourceFile, program, availableExports, childElements)
+    processSourceFile(childSourceFile, program, compilerHost, availableExports, childElements)
   })
 
   return availableExports;

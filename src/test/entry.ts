@@ -1,5 +1,5 @@
 // @ts-ignore
-export { fromInnerBarrel, iAmReExported } from "./barrel";
+export { fromInnerBarrel, iAmReExported } from "@barrel-alias";
 // @ts-ignore
 export * from './nothing-exported';
 export * from './barrel2';
