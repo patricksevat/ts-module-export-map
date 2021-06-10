@@ -199,7 +199,9 @@ function updateAvailableExports(symbolName: string, availableExports: IAvailable
   if(shouldAdd) {
     if(availableExports[symbolName]) {
       availableExports[symbolName][0].originalLocation = context.sourceFilePath;
-      availableExports[symbolName][0].reExportPath.push(context.sourceFilePath)
+      if(!availableExports[symbolName][0].reExportPath.includes(context.sourceFilePath)) {
+        availableExports[symbolName][0].reExportPath.push(context.sourceFilePath)
+      }
     } else {
       availableExports[symbolName] = [{
         originalLocation: context.sourceFilePath,
