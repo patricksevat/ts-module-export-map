@@ -5,8 +5,12 @@ import * as yargs from 'yargs';
 import {
   createProgramForEntryFile,
   findSourceFile,
-  getAbsoluteModulePathFromExportDeclaration, getCompilerOptions,
-  getExportsFromReExports, writeOutputToJson,
+  getAbsoluteModulePathFromExportDeclaration,
+  getCompilerOptions,
+  getExportedIdentifiersFromExportDeclaration,
+  getExportedIdentifiersFromReExportedFiles,
+  getExportsFromReExports,
+  writeOutputToJson,
 } from './utils';
 import { visitor } from './visitor';
 import { IAvailableExports, IContext, ISourceFileWithExports } from './types';
@@ -30,18 +34,19 @@ function getAvailableExports() {
  * @param availableExports
  * `availableExports` is the aggregate object which collects all exports, the file they are originally declared in,
  * and the re-export path which shows all the files which have exported this symbol
- * @param elements
- * `elements` are named reexports such as ['foo', 'bar'] in: `export { foo, bar } from './other-module`'
+ * @param topLevelExports
+ * all exported symbols available in the ENTRY file. We keep track because we can later filter out any identifiers that
+ * are not re-exported by any of the intermediate files
  */
-function processSourceFile(sourceFile: ts.SourceFile, program: ts.Program, compilerHost: ts.CompilerHost, availableExports: IAvailableExports = {}, elements: ts.ExportSpecifier[] = null) {
-  const context = {
+function processSourceFile(sourceFile: ts.SourceFile, program: ts.Program, compilerHost: ts.CompilerHost, availableExports: IAvailableExports = {}, topLevelExports: string[] = null) {
+  const context: IContext = {
     program,
     compilerHost,
     sourceFile,
     sourceFilePath: sourceFile.fileName.replace(process.cwd(), ''),
     typeChecker: program.getTypeChecker(),
     availableExports,
-    elements,
+    topLevelExports,
     exports: null,
   }
 
@@ -51,9 +56,9 @@ function processSourceFile(sourceFile: ts.SourceFile, program: ts.Program, compi
 
   findExportsInSourceFile(context);
 
-  reExportedSourceFiles.forEach((childSourceFileWithElements) => {
-    const { sourceFile: childSourceFile, elements: childElements } = childSourceFileWithElements;
-    processSourceFile(childSourceFile, program, compilerHost, availableExports, childElements)
+  reExportedSourceFiles.forEach((childSourceFileWithExports) => {
+    const { sourceFile: childSourceFile } = childSourceFileWithExports;
+    processSourceFile(childSourceFile, program, compilerHost, availableExports, topLevelExports || getExportedIdentifiersFromReExportedFiles(context.exports))
   })
 
   return availableExports;
@@ -72,20 +77,16 @@ function getSourceFilesForReExportedModules(
   exportDeclarations.forEach((exportDecl) => {
     const fileName = getAbsoluteModulePathFromExportDeclaration(context, exportDecl);
 
-    // elements works when explicitly exporting such as `export { foo, bar } from './module`
-    const elements = exportDecl.exportClause && exportDecl.exportClause.elements ? exportDecl.exportClause.elements : null;
-
-    // exports moduleSymbol works when wildcard exporting such as `export * from './module`
-    const moduleSymbol = context.typeChecker.getSymbolAtLocation(exportDecl.moduleSpecifier);
-    const exports = moduleSymbol && context.typeChecker.getExportsOfModule(moduleSymbol);
-    const exportsAsString = exports ? exports.map(e => String(e.escapedName)) : null;
+    // Gives us all exported identifiers for this exportDeclaration
+    // the identifiers can be explicit ['foo', 'bar'] in `export { foo, bar } from './module'`
+    // and also implicit ['foo', 'bar', 'baz'] in `export * from './module'
+    const exportedIdentifiers = getExportedIdentifiersFromExportDeclaration(context, exportDecl)
 
     const newSourceFile = findSourceFile(fileName, context.program);
     if (newSourceFile) {
       sourceFiles.push({
         sourceFile: newSourceFile,
-        elements,
-        exports: exportsAsString,
+        exports: exportedIdentifiers,
       });
     }
   })

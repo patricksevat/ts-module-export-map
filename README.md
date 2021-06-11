@@ -26,6 +26,7 @@ This feature is particularly useful if you have (a lot of) files that re-export 
 - Only takes a single entry point
 - Reports back paths, not aliases
 - Has only been tested on `typescript` version `3.5.3`. It might work on other versions, but I haven't tested it.
+- Symbols with the same name are ignored (if `const foo` is declared in multiple files you'll get weird results)
 
 ### Usage
 

@@ -44,11 +44,21 @@ export function getAbsoluteModulePathFromExportDeclaration(context: IContext, no
   return null;
 }
 
-export function getExportsFromReExports(reExports: ISourceFileWithExports[]) {
+export function getExportsFromReExports(reExports: ISourceFileWithExports[]): Record<string, string[]> {
   return reExports.reduce((aggregator, sourceFileWithContext) => {
     aggregator[String(sourceFileWithContext.sourceFile.fileName)] = sourceFileWithContext.exports;
     return aggregator;
   }, {})
+}
+
+export function getExportedIdentifiersFromExportDeclaration(context: IContext, exportDecl: ts.ExportDeclaration): string[] {
+  const moduleSymbol = context.typeChecker.getSymbolAtLocation(exportDecl.moduleSpecifier);
+  const exports = moduleSymbol && context.typeChecker.getExportsOfModule(moduleSymbol);
+  return exports ? exports.map(e => String(e.escapedName)) : null;
+}
+
+export function getExportedIdentifiersFromReExportedFiles(exports: Record<string, string[]>) {
+  return Object.values(exports).flat().filter(x => Boolean(x));
 }
 
 export async function writeOutputToJson(jsonPath: string, results: IAvailableExports) {

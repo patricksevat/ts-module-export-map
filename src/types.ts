@@ -7,13 +7,12 @@ export interface IContext {
   sourceFilePath: string,
   typeChecker: ts.TypeChecker,
   availableExports: IAvailableExports,
-  elements: ts.ExportSpecifier[],
-  exports: Record<string, string[]>
+  exports: Record<string, string[]>,
+  topLevelExports: string[],
 }
 
 export interface ISourceFileWithExports {
   sourceFile: ts.SourceFile,
-  elements: ts.ExportSpecifier[],
   exports: string[],
 }
 

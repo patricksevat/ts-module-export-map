@@ -1,5 +1,5 @@
 import * as ts from 'typescript';
-import { getAbsoluteModulePathFromExportDeclaration } from './utils';
+import { getExportedIdentifiersFromExportDeclaration } from './utils';
 import { IContext } from './types';
 
 export function visitor(
@@ -13,24 +13,12 @@ export function visitor(
     return;
 
   } else if (ts.isExportDeclaration(node)) {
-    // const foo = 'a';
-    // export { foo, foo as fooAlias }
-    if (node.exportClause && ts.isNamedExports(node.exportClause)) {
-      node.exportClause.elements.forEach((exportSpecifier) => {
-        const exportedSymbolName = String((exportSpecifier.name as ts.Identifier).escapedText);
-        updateAvailableExports(context, exportedSymbolName, null)
-      });
-    } else {
-      // export * from './module'
-      const absoluteModulePath = getAbsoluteModulePathFromExportDeclaration(context, node);
-      if(absoluteModulePath) {
-        const exportsFromModule = absoluteModulePath && this.exports[absoluteModulePath];
+    const exportedIdentifiers = getExportedIdentifiersFromExportDeclaration(context, node) || [];
+    exportedIdentifiers.forEach(identifier => {
+      // nodeKind will be set once we process the sourceFile that actually declares the identifier
+      updateAvailableExports(context, identifier, null)
+    })
 
-        exportsFromModule && exportsFromModule.forEach((exportedSymbolName: string) => {
-          updateAvailableExports(context, exportedSymbolName, null)
-        })
-      }
-    }
     return;
   }
 
@@ -73,25 +61,21 @@ function sensesPushExportDependencies(
 }
 
 function updateAvailableExports(context: IContext, symbolName: string, nodeKind: ts.SyntaxKind) {
-  let shouldAdd = true;
-  const elementsAsString = context.elements && context.elements.map(exportSpecifier => String(exportSpecifier.name.escapedText));
-  if(context.elements && !elementsAsString.includes(symbolName)) {
-    shouldAdd = false;
+  if(context.topLevelExports && !context.topLevelExports.includes(symbolName)) {
+    return
   }
 
-  if(shouldAdd) {
-    if(context.availableExports[symbolName]) {
-      context.availableExports[symbolName].originalLocation = context.sourceFilePath;
-      context.availableExports[symbolName].kind = nodeKind ? ts.SyntaxKind[nodeKind] : context.availableExports[symbolName].kind
-      if(!context.availableExports[symbolName].reExportPath.includes(context.sourceFilePath)) {
-        context.availableExports[symbolName].reExportPath.push(context.sourceFilePath)
-      }
-    } else {
-      context.availableExports[symbolName] = {
-        originalLocation: context.sourceFilePath,
-        reExportPath: [context.sourceFilePath],
-        kind: nodeKind ? ts.SyntaxKind[nodeKind] : ''
-      }
+  if(context.availableExports[symbolName]) {
+    context.availableExports[symbolName].originalLocation = context.sourceFilePath;
+    context.availableExports[symbolName].kind = nodeKind ? ts.SyntaxKind[nodeKind] : context.availableExports[symbolName].kind
+    if(!context.availableExports[symbolName].reExportPath.includes(context.sourceFilePath)) {
+      context.availableExports[symbolName].reExportPath.push(context.sourceFilePath)
+    }
+  } else {
+    context.availableExports[symbolName] = {
+      originalLocation: context.sourceFilePath,
+      reExportPath: [context.sourceFilePath],
+      kind: nodeKind ? ts.SyntaxKind[nodeKind] : ''
     }
   }
 }

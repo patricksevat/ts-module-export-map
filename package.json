@@ -12,7 +12,8 @@
   "scripts": {
     "start": "ts-node ./src/main.ts",
     "debug": "node --inspect -r ts-node/register ./src/main.ts",
-    "test": "yarn start --tsConfigJson=./tsconfig.json --outputJson=./tmp/output.json test/entry.ts"
+    "test": "yarn start --tsConfigJson=./tsconfig.json --outputJson=./tmp/output.json test/entry.ts",
+    "test:debug": "yarn debug --tsConfigJson=./tsconfig.json --outputJson=./tmp/output.json test/entry.ts"
   },
   "devDependencies": {
     "@types/node": "^15.12.1",
