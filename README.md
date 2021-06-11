@@ -55,7 +55,7 @@ If you do not want any output to the console you can add the `--silent` flag.
 
 ### Example
 
-Given this directory structure (see [./src/test](./src/test))
+Given this directory structure (see [./test](./test))
 ```
 | - entry.ts
 | - nothing-exported.ts
