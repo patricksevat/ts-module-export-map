@@ -17,7 +17,6 @@ export function visitor(
     // export { foo, foo as fooAlias }
     if (node.exportClause && ts.isNamedExports(node.exportClause)) {
       node.exportClause.elements.forEach((exportSpecifier) => {
-        // this.typeChecker.getSymbolAtLocation(exportSpecifier.name)
         const exportedSymbolName = String((exportSpecifier.name as ts.Identifier).escapedText);
         updateAvailableExports(context, exportedSymbolName)
       });
