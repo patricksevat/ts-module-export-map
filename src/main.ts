@@ -6,7 +6,7 @@ import {
   createProgramForEntryFile,
   findSourceFile,
   getAbsoluteModulePathFromExportDeclaration, getCompilerOptions,
-  getExportsFromReExports,
+  getExportsFromReExports, writeOutputToJson,
 } from './utils';
 import { visitor } from './visitor';
 import { IAvailableExports, IContext, ISourceFileWithExports } from './types';
@@ -20,9 +20,7 @@ function getAvailableExports() {
   const compilerHost = ts.createCompilerHost(compilerOptions);
   const program = createProgramForEntryFile(entryFilePath, compilerOptions, compilerHost);
   const entrySourceFile = program.getSourceFile(entryFilePath);
-  const results = processSourceFile(entrySourceFile, program, compilerHost);
-
-  console.log(JSON.stringify(results, null, 2))
+  return processSourceFile(entrySourceFile, program, compilerHost);
 }
 
 /**
@@ -33,7 +31,7 @@ function getAvailableExports() {
  * `availableExports` is the aggregate object which collects all exports, the file they are originally declared in,
  * and the re-export path which shows all the files which have exported this symbol
  * @param elements
- * `elements` are named reexports such as: export { foo, bar } from './other-module'
+ * `elements` are named reexports such as ['foo', 'bar'] in: `export { foo, bar } from './other-module`'
  */
 function processSourceFile(sourceFile: ts.SourceFile, program: ts.Program, compilerHost: ts.CompilerHost, availableExports: IAvailableExports = {}, elements: ts.ExportSpecifier[] = null) {
   const context = {
@@ -97,12 +95,24 @@ function getSourceFilesForReExportedModules(
 
 async function parseCmdLineArgs() {
   argv = await yargs(process.argv.slice(2)).options({
-    tsConfigJson: { type: 'string', default: '' }
+    tsConfigJson: { type: 'string', default: '' },
+    outputJson: { type: 'string', default: null },
+    silent: { type: 'boolean', default: false }
   }).argv
+}
+
+async function processResults(results: IAvailableExports) {
+  if(argv.outputJson) {
+    await writeOutputToJson(argv.outputJson, results)
+  }
+  if(!argv.silent) {
+    console.log(JSON.stringify(results, null, 2))
+  }
 }
 
 parseCmdLineArgs()
   .then(getAvailableExports)
+  .then(processResults)
   .then(() => process.exit(0))
   .catch((e) => {
     console.error(e);

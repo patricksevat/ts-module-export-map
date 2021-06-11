@@ -1,7 +1,8 @@
 import * as ts from 'typescript';
-import { IContext, ISourceFileWithExports } from './types';
+import { IAvailableExports, IContext, ISourceFileWithExports } from './types';
 import * as fs from "fs";
 import * as path from 'path';
+import * as util from 'util';
 
 export function replaceQuotes(str: string) {
   return str.replace(/["']/g, '')
@@ -48,4 +49,9 @@ export function getExportsFromReExports(reExports: ISourceFileWithExports[]) {
     aggregator[String(sourceFileWithContext.sourceFile.fileName)] = sourceFileWithContext.exports;
     return aggregator;
   }, {})
+}
+
+export async function writeOutputToJson(jsonPath: string, results: IAvailableExports) {
+  const writeFilePromisified = util.promisify(fs.writeFile);
+  await writeFilePromisified(path.resolve(process.cwd(), jsonPath), JSON.stringify(results, null, 2));
 }
