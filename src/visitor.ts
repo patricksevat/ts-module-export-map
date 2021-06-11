@@ -18,7 +18,7 @@ export function visitor(
     if (node.exportClause && ts.isNamedExports(node.exportClause)) {
       node.exportClause.elements.forEach((exportSpecifier) => {
         const exportedSymbolName = String((exportSpecifier.name as ts.Identifier).escapedText);
-        updateAvailableExports(context, exportedSymbolName)
+        updateAvailableExports(context, exportedSymbolName, null)
       });
     } else {
       // export * from './module'
@@ -27,7 +27,7 @@ export function visitor(
         const exportsFromModule = absoluteModulePath && this.exports[absoluteModulePath];
 
         exportsFromModule && exportsFromModule.forEach((exportedSymbolName: string) => {
-          updateAvailableExports(context, exportedSymbolName)
+          updateAvailableExports(context, exportedSymbolName, null)
         })
       }
     }
@@ -49,14 +49,14 @@ function sensesPushExportDependencies(
     ts.isFunctionDeclaration(parent)
   ) {
     const exportedSymbolName = String((parent.name as ts.Identifier).escapedText);
-    updateAvailableExports(context, exportedSymbolName)
+    updateAvailableExports(context, exportedSymbolName, parent.kind)
   }
 
   if (ts.isVariableStatement(parent)) {
     parent.declarationList.declarations.forEach((variableDeclaration) => {
       if (ts.isIdentifier(variableDeclaration.name)) {
         const exportedSymbolName = String(variableDeclaration.name.escapedText);
-        updateAvailableExports(context, exportedSymbolName)
+        updateAvailableExports(context, exportedSymbolName, parent.kind)
       }
 
       // export const { a, b: bAlias } = myObj
@@ -64,7 +64,7 @@ function sensesPushExportDependencies(
         variableDeclaration.name.elements.forEach((bindingElement) => {
           if (ts.isIdentifier(bindingElement.name)) {
             const exportedSymbolName = String(bindingElement.name.escapedText);
-            updateAvailableExports(context, exportedSymbolName)
+            updateAvailableExports(context, exportedSymbolName, parent.kind)
           }
         });
       }
@@ -72,7 +72,7 @@ function sensesPushExportDependencies(
   }
 }
 
-function updateAvailableExports(context: IContext, symbolName: string) {
+function updateAvailableExports(context: IContext, symbolName: string, nodeKind: ts.SyntaxKind) {
   let shouldAdd = true;
   const elementsAsString = context.elements && context.elements.map(exportSpecifier => String(exportSpecifier.name.escapedText));
   if(context.elements && !elementsAsString.includes(symbolName)) {
@@ -82,13 +82,15 @@ function updateAvailableExports(context: IContext, symbolName: string) {
   if(shouldAdd) {
     if(context.availableExports[symbolName]) {
       context.availableExports[symbolName].originalLocation = context.sourceFilePath;
+      context.availableExports[symbolName].kind = nodeKind ? ts.SyntaxKind[nodeKind] : context.availableExports[symbolName].kind
       if(!context.availableExports[symbolName].reExportPath.includes(context.sourceFilePath)) {
         context.availableExports[symbolName].reExportPath.push(context.sourceFilePath)
       }
     } else {
       context.availableExports[symbolName] = {
         originalLocation: context.sourceFilePath,
-        reExportPath: [context.sourceFilePath]
+        reExportPath: [context.sourceFilePath],
+        kind: nodeKind ? ts.SyntaxKind[nodeKind] : ''
       }
     }
   }

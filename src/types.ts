@@ -20,6 +20,7 @@ export interface ISourceFileWithExports {
 export interface IAvailableExport {
   originalLocation: string,
   reExportPath: string[],
+  kind: string,
 }
 
 export interface IAvailableExports {
