@@ -70,37 +70,45 @@ The output would be:
 ```json
 {
   "iAmReExported": {
-    "originalLocation": "/src/test/barrel/partial-export/index.ts",
-    "reExportPath": [
-      "/src/test/entry.ts",
-      "/src/test/barrel/index.ts",
-      "/src/test/barrel/partial-export/index.ts"
-    ]
-  },
+      "originalLocation": "/test/barrel/partial-export/index.ts",
+      "reExportPath": [
+        "test/entry.ts",
+        "test/barrel/index.ts",
+        "/test/barrel/partial-export/index.ts"
+      ],
+      "kind": "VariableStatement"
+    },
   "baz": {
-    "originalLocation": "/src/test/entry.ts",
-    "reExportPath": [
-      "/src/test/entry.ts"
-    ]
-  },
-  "foo": {
-    "originalLocation": "/src/test/entry.ts",
-    "reExportPath": [
-      "/src/test/entry.ts"
-    ]
-  },
+      "originalLocation": "test/entry.ts",
+      "reExportPath": [
+        "test/entry.ts"
+      ],
+      "kind": ""
+    },
+    "foo": {
+      "originalLocation": "/test/barrel2/inner/foo.ts",
+      "reExportPath": [
+        "test/entry.ts",
+        "/test/barrel2/index.ts",
+        "/test/barrel2/inner/index.ts",
+        "/test/barrel2/inner/foo.ts"
+      ],
+      "kind": "VariableStatement"
+    },
   "a": {
-    "originalLocation": "/src/test/entry.ts",
-    "reExportPath": [
-      "/src/test/entry.ts"
-    ]
-  },
-  "bAlias": {
-    "originalLocation": "/src/test/entry.ts",
-    "reExportPath": [
-      "/src/test/entry.ts"
-    ]
-  }
+      "originalLocation": "test/entry.ts",
+      "reExportPath": [
+        "test/entry.ts"
+      ],
+      "kind": "VariableStatement"
+    },
+    "bAlias": {
+      "originalLocation": "test/entry.ts",
+      "reExportPath": [
+        "test/entry.ts"
+      ],
+      "kind": "VariableStatement"
+    }
 }
 
 
