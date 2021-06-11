@@ -13,7 +13,7 @@
     "moduleResolution": "node",
     "outDir": "./dist",
     "paths": {
-      "@barrel-alias": ["./src/test/barrel/index.ts"]
+      "@barrel-alias": ["./test/barrel/index.ts"]
     },
     "sourceMap": false,
     "target": "es5",
