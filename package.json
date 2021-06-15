@@ -1,6 +1,6 @@
 {
   "name": "ts-module-export-map",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "dependencies": {
     "ts-node": "^8.10.2",
     "typescript": "3.5.3",
@@ -10,10 +10,12 @@
     "ts-module-export-map": "./src/main.ts"
   },
   "scripts": {
+    "build": "tsc --outDir dist --module commonjs",
     "start": "ts-node ./src/main.ts",
     "debug": "node --inspect -r ts-node/register ./src/main.ts",
     "test": "yarn start --tsConfigJson=./tsconfig.json --outputJson=./tmp/output.json test/entry.ts",
-    "test:debug": "yarn debug --tsConfigJson=./tsconfig.json --outputJson=./tmp/output.json test/entry.ts"
+    "test:debug": "yarn debug --tsConfigJson=./tsconfig.json --outputJson=./tmp/output.json test/entry.ts",
+    "test:build": "node dist/main.js --tsConfigJson=./tsconfig.json --outputJson=./tmp/output.json test/entry.ts"
   },
   "devDependencies": {
     "@types/node": "^15.12.1",

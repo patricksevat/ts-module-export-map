@@ -54,6 +54,10 @@ If you want to write the results to a JSON file you can do so using `--outputJso
 
 If you do not want any output to the console you can add the `--silent` flag.
 
+For best performance, first run `yarn build` and then use the compiled js version
+
+`$ node ./dist/main.js --tsConfigJson=./tsconfig.json --outputJson=./tmp/output.json /entry-module.ts`
+
 ### Example
 
 Given this directory structure (see [./test](./test))
