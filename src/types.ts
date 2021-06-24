@@ -7,11 +7,12 @@ export interface IContext {
   sourceFilePath: string,
   typeChecker: ts.TypeChecker,
   availableExports: IAvailableExports,
-  exports: Record<string, string[]>,
-  topLevelExports: string[],
+  exportsAvailableFromEntryFile: string[],
+  isEntryFile: boolean,
 }
 
 export interface ISourceFileWithExports {
+  moduleSpecifier: string,
   sourceFile: ts.SourceFile,
   exports: string[],
 }

@@ -61,7 +61,7 @@ function sensesPushExportDependencies(
 }
 
 function updateAvailableExports(context: IContext, symbolName: string, nodeKind: ts.SyntaxKind) {
-  if(context.topLevelExports && !context.topLevelExports.includes(symbolName)) {
+  if(!context.isEntryFile && context.exportsAvailableFromEntryFile && !context.exportsAvailableFromEntryFile.includes(symbolName)) {
     return
   }
 

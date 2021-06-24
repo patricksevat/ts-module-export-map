@@ -44,24 +44,49 @@ export function getAbsoluteModulePathFromExportDeclaration(context: IContext, no
   return null;
 }
 
-export function getExportsFromReExports(reExports: ISourceFileWithExports[]): Record<string, string[]> {
-  return reExports.reduce((aggregator, sourceFileWithContext) => {
-    aggregator[String(sourceFileWithContext.sourceFile.fileName)] = sourceFileWithContext.exports;
-    return aggregator;
-  }, {})
-}
-
 export function getExportedIdentifiersFromExportDeclaration(context: IContext, exportDecl: ts.ExportDeclaration): string[] {
   const moduleSymbol = context.typeChecker.getSymbolAtLocation(exportDecl.moduleSpecifier);
-  const exports = moduleSymbol && context.typeChecker.getExportsOfModule(moduleSymbol);
-  return exports ? exports.map(e => String(e.escapedName)) : null;
+
+  // We are reExporting from a different module e.g.
+  // export { symbol } from './other-module'
+  if(moduleSymbol) {
+    const exports = moduleSymbol && context.typeChecker.getExportsOfModule(moduleSymbol);
+    return exports ? exports.map(e => String(e.escapedName)) : null;
+  // We are exporting from this module e.g.
+  // const bar = 1;
+  // export { bar };
+  } else if(exportDecl.exportClause) {
+    return getNamedExports(exportDecl.exportClause);
+  } else {
+    return null
+  }
 }
 
-export function getExportedIdentifiersFromReExportedFiles(exports: Record<string, string[]>) {
-  return Object.values(exports).flat().filter(x => Boolean(x));
+export function getTopLevelExports(context: IContext, reExportDeclarations: ts.ExportDeclaration[], reExportedSourceFiles: ISourceFileWithExports[]): string[] {
+  const availableReExports = reExportDeclarations.reduce((aggr, exportDeclaration ) => {
+    const namedReExports = exportDeclaration.exportClause && getNamedExports(exportDeclaration.exportClause);
+    if(namedReExports) {
+      return [...aggr, ...namedReExports];
+    }
+
+    const sourceFileWithExports = reExportedSourceFiles.find(sourceFileWithExports => {
+      return sourceFileWithExports.moduleSpecifier === replaceQuotes(exportDeclaration.moduleSpecifier.getText(context.sourceFile))
+    });
+
+    const exportsFromSourceFile = sourceFileWithExports.exports || [];
+    return [...aggr, ...exportsFromSourceFile];
+  }, [])
+
+  return availableReExports
 }
 
 export async function writeOutputToJson(jsonPath: string, results: IAvailableExports) {
   const writeFilePromisified = util.promisify(fs.writeFile);
   await writeFilePromisified(path.resolve(process.cwd(), jsonPath), JSON.stringify(results, null, 2));
+}
+
+export function getNamedExports(namedExports: ts.NamedExports): string[] {
+  return namedExports.elements.map((exportSpecifier) => {
+    return String(exportSpecifier.name.escapedText)
+  })
 }

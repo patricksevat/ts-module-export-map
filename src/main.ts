@@ -8,8 +8,7 @@ import {
   getAbsoluteModulePathFromExportDeclaration,
   getCompilerOptions,
   getExportedIdentifiersFromExportDeclaration,
-  getExportedIdentifiersFromReExportedFiles,
-  getExportsFromReExports,
+  getTopLevelExports, replaceQuotes,
   writeOutputToJson,
 } from './utils';
 import { visitor } from './visitor';
@@ -34,11 +33,11 @@ function getAvailableExports() {
  * @param availableExports
  * `availableExports` is the aggregate object which collects all exports, the file they are originally declared in,
  * and the re-export path which shows all the files which have exported this symbol
- * @param topLevelExports
+ * @param exportsAvailableFromEntryFile
  * all exported symbols available in the ENTRY file. We keep track because we can later filter out any identifiers that
  * are not re-exported by any of the intermediate files
  */
-function processSourceFile(sourceFile: ts.SourceFile, program: ts.Program, compilerHost: ts.CompilerHost, availableExports: IAvailableExports = {}, topLevelExports: string[] = null) {
+function processSourceFile(sourceFile: ts.SourceFile, program: ts.Program, compilerHost: ts.CompilerHost, availableExports: IAvailableExports = {}, exportsAvailableFromEntryFile: string[] = null) {
   const context: IContext = {
     program,
     compilerHost,
@@ -46,19 +45,20 @@ function processSourceFile(sourceFile: ts.SourceFile, program: ts.Program, compi
     sourceFilePath: sourceFile.fileName.replace(process.cwd(), ''),
     typeChecker: program.getTypeChecker(),
     availableExports,
-    topLevelExports,
-    exports: null,
+    exportsAvailableFromEntryFile,
+    isEntryFile: !Boolean(exportsAvailableFromEntryFile),
   }
 
   const reExportDeclarations = sourceFile.statements.filter(ts.isExportDeclaration).filter(exportDecl => exportDecl.moduleSpecifier);
   const reExportedSourceFiles = getSourceFilesForReExportedModules(context, reExportDeclarations);
-  context.exports = getExportsFromReExports(reExportedSourceFiles);
+
+  context.exportsAvailableFromEntryFile = exportsAvailableFromEntryFile || getTopLevelExports(context, reExportDeclarations, reExportedSourceFiles);
 
   findExportsInSourceFile(context);
 
   reExportedSourceFiles.forEach((childSourceFileWithExports) => {
     const { sourceFile: childSourceFile } = childSourceFileWithExports;
-    processSourceFile(childSourceFile, program, compilerHost, availableExports, topLevelExports || getExportedIdentifiersFromReExportedFiles(context.exports))
+    processSourceFile(childSourceFile, program, compilerHost, availableExports, context.exportsAvailableFromEntryFile)
   })
 
   return availableExports;
@@ -85,6 +85,7 @@ function getSourceFilesForReExportedModules(
     const newSourceFile = findSourceFile(fileName, context.program);
     if (newSourceFile) {
       sourceFiles.push({
+        moduleSpecifier: replaceQuotes(exportDecl.moduleSpecifier.getText(context.sourceFile)),
         sourceFile: newSourceFile,
         exports: exportedIdentifiers,
       });

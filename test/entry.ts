@@ -1,5 +1,6 @@
 // @ts-ignore
-export { fromInnerBarrel, iAmReExported } from "@barrel-alias";
+export { fromInnerBarrel } from "@barrel-alias";
+export { iAmReExported } from './barrel/partial-export';
 // @ts-ignore
 export * from './nothing-exported';
 export * from './barrel2';
@@ -35,9 +36,9 @@ export function authTokenReducer(
 }
 
 const baz = 9;
-const foo = 1;
+const foobar = 1;
 
-export { baz, foo };
+export { baz, foobar };
 
 const myObj = {
   a: 1,
