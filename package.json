@@ -1,6 +1,6 @@
 {
   "name": "ts-module-export-map",
-  "version": "1.1.1",
+  "version": "1.2.1",
   "dependencies": {
     "ts-node": "^8.10.2",
     "typescript": "3.5.3",

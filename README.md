@@ -19,6 +19,7 @@ This feature is particularly useful if you have (a lot of) files that re-export 
 - Supports most (if not all) [ways of declaring an export](https://developer.mozilla.org/en-US/docs/web/javascript/reference/statements/export#syntax)
 - Supports exported functions, interfaces, enums, vars, lets, consts
 - Supports `tsConfig.compilerOptions.paths` aliases (if you use `--tsConfigJson`)
+- Supports both `.ts` and `.tsx` files
 
 ### Limitations
 

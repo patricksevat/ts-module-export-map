@@ -11,7 +11,9 @@ export function replaceQuotes(str: string) {
 export function findSourceFile(filePath: string, program: ts.Program): ts.SourceFile {
   return program.getSourceFile(filePath) ||
     program.getSourceFile(`${filePath}.ts`) ||
+    program.getSourceFile(`${filePath}.tsx`) ||
     program.getSourceFile(`${filePath}/index.ts`) ||
+    program.getSourceFile(`${filePath}/index.tsx`) ||
     null
 }
 
@@ -22,7 +24,15 @@ export function getCompilerOptions(tsConfigJsonPath: string) {
 
   const configTxt = fs.readFileSync(path.resolve(process.cwd(), tsConfigJsonPath), 'utf8');
   const { config } = ts.parseConfigFileTextToJson(tsConfigJsonPath, configTxt);
-  return (config && config.compilerOptions) ? config.compilerOptions : {};
+  if(config && config.compilerOptions) {
+    return {
+      ...config.compilerOptions,
+      jsx: ts.JsxEmit.React
+    }
+  }
+  return (config && config.compilerOptions) ? config.compilerOptions : {
+    jsx: ts.JsxEmit.React
+  };
 }
 
 export function createProgramForEntryFile(entryFilePath: string, compilerOptions: ts.CompilerOptions, host: ts.CompilerHost) {

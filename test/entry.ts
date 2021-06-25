@@ -1,3 +1,4 @@
+export * from './jsx'
 // @ts-ignore
 export { fromInnerBarrel } from "@barrel-alias";
 export { iAmReExported } from './barrel/partial-export';
