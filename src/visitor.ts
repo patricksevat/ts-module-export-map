@@ -1,5 +1,5 @@
 import * as ts from 'typescript';
-import { getExportedIdentifiersFromExportDeclaration } from './utils';
+import { getExportedIdentifiersFromExportDeclaration, getModuleNameFromExportDeclaration } from './utils';
 import { IContext } from './types';
 
 export function visitor(
@@ -13,10 +13,11 @@ export function visitor(
     return;
 
   } else if (ts.isExportDeclaration(node)) {
+    const moduleName = getModuleNameFromExportDeclaration(context, node)
     const exportedIdentifiers = getExportedIdentifiersFromExportDeclaration(context, node) || [];
     exportedIdentifiers.forEach(identifier => {
       // nodeKind will be set once we process the sourceFile that actually declares the identifier
-      updateAvailableExports(context, identifier, null)
+      updateAvailableExports(context, identifier, null, moduleName)
     })
 
     return;
@@ -37,14 +38,14 @@ function sensesPushExportDependencies(
     ts.isFunctionDeclaration(parent)
   ) {
     const exportedSymbolName = String((parent.name as ts.Identifier).escapedText);
-    updateAvailableExports(context, exportedSymbolName, parent.kind)
+    updateAvailableExports(context, exportedSymbolName, parent.kind, null)
   }
 
   if (ts.isVariableStatement(parent)) {
     parent.declarationList.declarations.forEach((variableDeclaration) => {
       if (ts.isIdentifier(variableDeclaration.name)) {
         const exportedSymbolName = String(variableDeclaration.name.escapedText);
-        updateAvailableExports(context, exportedSymbolName, parent.kind)
+        updateAvailableExports(context, exportedSymbolName, parent.kind, null)
       }
 
       // export const { a, b: bAlias } = myObj
@@ -52,7 +53,7 @@ function sensesPushExportDependencies(
         variableDeclaration.name.elements.forEach((bindingElement) => {
           if (ts.isIdentifier(bindingElement.name)) {
             const exportedSymbolName = String(bindingElement.name.escapedText);
-            updateAvailableExports(context, exportedSymbolName, parent.kind)
+            updateAvailableExports(context, exportedSymbolName, parent.kind, null)
           }
         });
       }
@@ -60,7 +61,16 @@ function sensesPushExportDependencies(
   }
 }
 
-function updateAvailableExports(context: IContext, symbolName: string, nodeKind: ts.SyntaxKind) {
+function updateAvailableExports(context: IContext, symbolName: string, nodeKind: ts.SyntaxKind, moduleName: string) {
+  // Check for moduleSpecifier in entryFile
+  // export { foo, bar } from 'other-module'
+  // should be handled differently from local exportDeclarations:
+  // const foo = 'a'; export { foo };
+  if(context.isEntryFile && moduleName && context.exportsAvailableFromEntryFile && !context.exportsAvailableFromEntryFile.includes(symbolName)) {
+    return;
+  }
+
+  // In non-entry files we only want to return stuff thats available in the entry file
   if(!context.isEntryFile && context.exportsAvailableFromEntryFile && !context.exportsAvailableFromEntryFile.includes(symbolName)) {
     return
   }

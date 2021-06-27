@@ -5,6 +5,7 @@ export { iAmReExported } from './barrel/partial-export';
 // @ts-ignore
 export * from './nothing-exported';
 export * from './barrel2';
+export { partialB, partialC } from './partial2';
 
 export interface BfAdviseAuthTokenState {
   authToken: string;

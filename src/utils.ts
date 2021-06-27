@@ -3,6 +3,7 @@ import { IAvailableExports, IContext, ISourceFileWithExports } from './types';
 import * as fs from "fs";
 import * as path from 'path';
 import * as util from 'util';
+import { ExportDeclaration } from 'typescript';
 
 export function replaceQuotes(str: string) {
   return str.replace(/["']/g, '')
@@ -99,4 +100,14 @@ export function getNamedExports(namedExports: ts.NamedExports): string[] {
   return namedExports.elements.map((exportSpecifier) => {
     return String(exportSpecifier.name.escapedText)
   })
+}
+
+export function getModuleNameFromExportDeclaration(context: IContext, exportDeclaration: ExportDeclaration): string {
+  const moduleSpecifier = exportDeclaration.moduleSpecifier;
+
+  if(!moduleSpecifier) {
+    return null;
+  }
+
+  return replaceQuotes(exportDeclaration.moduleSpecifier.getText(context.sourceFile))
 }
