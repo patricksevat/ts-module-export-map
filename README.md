@@ -1,5 +1,10 @@
 # ts-module-export-map
 
+> [!CAUTION]
+> This code was written in June 2021 when the ecosystem and knowledge around the TS Compiler API was limited.
+> Currently there is a much better, open-source alternative available which does a much better job than this code.
+> Check out [ts-morph's `getExportedDeclarations()`](https://ts-morph.com/details/exports#getting-exported-declarations). This lacks the `reExportPath` and `originalLocation` functionality of my code but I'm sure you can get that to work with a little work by looping over the source files if you really need it
+
 ### What is it
 
 ts-module-export-map is a small tool to determine what your TypeScript module exports.
